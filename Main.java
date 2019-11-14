@@ -4,20 +4,23 @@ import java.nio.file.*;
 
 public class Main {
     public static void main(String[] args) {
-//        String year = "2016";
-//        int type = 0;           // SEE DEFINITION OF TYPE BELOW ON LINE 50
-//        int readFromFile = 1;
-//        int totalIterations = 1;
-//        int strategy = 1;
-
+        // ARGUMENTS TO THE PROGRAM IN THE FOLLOWING ORDER
+        // YEAR   TYPE   #ITERATIONS   STRATEGY   SIM_INDEX
         String year = args[0];
         int type = Integer.parseInt(args[1]);
-        int readFromFile = Integer.parseInt(args[2]);
-        int totalIterations = Integer.parseInt(args[3]);
-        int strategy = Integer.parseInt(args[4]);
+        int totalIterations = Integer.parseInt(args[2]);
+        int strategy = Integer.parseInt(args[3]);
+        int simIndex = Integer.parseInt(args[4]);
+
+        int readFromFile = 0;
+//        String year = "2017";
+//        int type = 0;
+//        int totalIterations = 1;
+//        int strategy =  0;
+//        int simIndex = 0;
 
         // CREATE DIRECTORY STRUCTURE TO STORE RESULTS
-        createDirectoryStructure();
+        createDirectoryStructure(simIndex);
 
         // IMPORT DATA
         System.out.println("\nImporting data for " + year + "...");
@@ -59,18 +62,22 @@ public class Main {
         //                = 1 READ MEDIAN TRUE PROBABILITIES FROM FILE
         double[] approxTrueProb = calculateApproxTrueProb(year, predictions, type, readFromFile, curDir);
 
-        simulate(year, totalIterations, type, approxTrueProb, uniqueMatchUpIDs, predictions, seeds, slots, curDir, strategy);
+        simulate(year, totalIterations, type, approxTrueProb, uniqueMatchUpIDs, predictions, seeds, slots, curDir, strategy, simIndex);
 
     }
 
-    private static void simulate(String year, int totalIterations, int type, double[] approxTrueProb, String[] uniqueMatchUpIDs, double[][] predictions, String[][] seeds, String[][] slots, String curDir, int strategy) {
+    private static void simulate(String year, int totalIterations, int type, double[] approxTrueProb,
+                                 String[] uniqueMatchUpIDs, double[][] predictions, String[][] seeds, String[][] slots,
+                                 String curDir, int strategy, int simIndex) {
         // SIMULATE THE PLAY-IN MATCHES AND TOURNAMENT MULTIPLE TIMES
 //        double[] logLossScoreList = new double[totalIterations];
         for (int iteration = 0; iteration < totalIterations; iteration++) {
-	    if (iteration % 1000 == 0) {
+            // SIMULATING PLAY-IN MATCHES
+
+            if (iteration % 1000 == 0) {
                 System.out.println("Iteration: " + iteration);
             }
-            // SIMULATING PLAY-IN MATCHES
+
             String[][] playInTeamSeedsAndIDs = getSeeds(slots, 0);
             getPlayInTeamIDs(seeds, playInTeamSeedsAndIDs);
             String[][] playInMatchWinners = simulatePlayInMatches(year, playInTeamSeedsAndIDs, uniqueMatchUpIDs, approxTrueProb);
@@ -88,10 +95,10 @@ public class Main {
             double[][] tourneyPredFromSubmissions = getPredictionsFromSubmissions(year, predictions, tournamentResults, uniqueMatchUpIDs);
 
             // CALCULATE AND SORT LOG LOSS
-            double[][] logLossLeaderboard = calculateAllLogLosses(year, tournamentResults, tourneyPredFromSubmissions, simulationLogLoss, iteration, type, curDir);
+            double[][] logLossLeaderboard = calculateAllLogLosses(year, tournamentResults, tourneyPredFromSubmissions, simulationLogLoss, iteration, type, curDir, simIndex);
 
             //WRITING RESULTS TO A FILE
-            writeTournamentResults(year, tournamentResults, simulationLogLoss, iteration, type, curDir);
+            writeTournamentResults(year, tournamentResults, simulationLogLoss, iteration, type, curDir, simIndex);
             // System.out.println("Winner of simulation : Team " + tournamentResults[tournamentResults.length - 1][tournamentResults[0].length - 4]);
             // System.out.println("LogLoss Score : " + simulationLogLoss);
         }
@@ -102,11 +109,11 @@ public class Main {
         // System.out.printf("Average LogLoss score of %d simulations = %s%n", totalIterations, calculateMean(logLossScoreList));
 
         // GET THE RANKS OF OUR APPROX TRUE PROBABILITIES ACROSS ALL SIMULATIONS AND WRITE THEM OUT TO A FILE
-        getTrueProbRanksFromLeaderboard(year, type, curDir);
+        getTrueProbRanksFromLeaderboard(year, type, curDir, simIndex);
 
     }
 
-    private static void getTrueProbRanksFromLeaderboard(String year, int type, String curDir) {
+    private static void getTrueProbRanksFromLeaderboard(String year, int type, String curDir, int simIndex) {
         int rank;
         File leaderboardFiles;
         if (year.equals("2016")) {
@@ -115,9 +122,9 @@ public class Main {
             rank = 775;
         }
         if (type == 0) {
-            leaderboardFiles = new File(curDir + "/Results/" + year + "/LogLoss_Leaderboard/Mean/");
+            leaderboardFiles = new File(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Mean/LogLoss_Leaderboard/");
         } else {
-            leaderboardFiles = new File(curDir + "/Results/" + year + "/LogLoss_Leaderboard/Median/");
+            leaderboardFiles = new File(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Median/LogLoss_Leaderboard/");
         }
         List<File> fileList = getAllFiles(leaderboardFiles, new ArrayList<>(), false);
         List<Integer> trueProbRank = new ArrayList<>();
@@ -147,9 +154,9 @@ public class Main {
         try {
             BufferedWriter writer = null;
             if (type == 0) {
-                writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/LogLoss_Leaderboard/RanksOf-Mean-" + year + ".csv"));
+                writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/RanksOf-Mean-" + year + ".csv"));
             } else if (type == 1) {
-                writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/LogLoss_Leaderboard/RanksOf-Median-" + year + ".csv"));
+                writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/RanksOf-Median-" + year + ".csv"));
             }
             assert writer != null;
             writer.write(builder.toString());
@@ -159,7 +166,7 @@ public class Main {
         }
     }
 
-    private static void writeLogLossLeaderboard(String year, double[][] logLossLeaderboard, int iter, int type, String curDir) {
+    private static void writeLogLossLeaderboard(String year, double[][] logLossLeaderboard, int iter, int type, String curDir, int simIndex) {
         StringBuilder builder = new StringBuilder();
         builder.append("RANK").append(",").append("LOG LOSS").append(",").append("SERIAL #").append("\n");
         for (double[] prediction : logLossLeaderboard) {
@@ -170,10 +177,10 @@ public class Main {
             iter++;
             if (type == 0) {
                 writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year +
-                        "/LogLoss_Leaderboard/Mean/leaderboard_" + iter + "_" + year + ".csv"));
+                        "/Simulation_" + simIndex + "/Mean/LogLoss_Leaderboard/leaderboard_" + iter + "_" + year + ".csv"));
             } else if (type == 1) {
                 writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year +
-                        "/LogLoss_Leaderboard/Median/leaderboard_" + iter + "_" + year + ".csv"));
+                        "/Simulation_" + simIndex + "/Median/LogLoss_Leaderboard/leaderboard_" + iter + "_" + year + ".csv"));
             }
             assert writer != null;
             writer.write(builder.toString());
@@ -187,7 +194,7 @@ public class Main {
         java.util.Arrays.sort(array, Comparator.comparingDouble(a -> a[col]));
     }
 
-    private static double[][] calculateAllLogLosses(String year, String[][] tournamentResults, double[][] tourneyPredFromSubmissions, double simulationLogLoss, int iteration, int type, String curDir) {
+    private static double[][] calculateAllLogLosses(String year, String[][] tournamentResults, double[][] tourneyPredFromSubmissions, double simulationLogLoss, int iteration, int type, String curDir, int simIndex) {
         // CALCULATE ALL SUBMISSION LOG LOSSES
         // System.out.println("Preparing the leaderboard and ranking all log loss scores...");
         double[][] logLossLeaderboard = new double[tourneyPredFromSubmissions[0].length + 1][3];
@@ -211,7 +218,7 @@ public class Main {
         }
 
         // WRITE SORTED LOG LOSS LEADERBOARD TO FILE
-        writeLogLossLeaderboard(year, logLossLeaderboard, iteration, type, curDir);
+        writeLogLossLeaderboard(year, logLossLeaderboard, iteration, type, curDir, simIndex);
         return logLossLeaderboard;
     }
 
@@ -253,15 +260,15 @@ public class Main {
                 ((1 - Double.parseDouble(actualOutcome)) * Math.log(1 - Double.parseDouble(meanPred))));
     }
 
-    private static void writeTournamentResults(String year, String[][] tournamentResults, double simulationLogLoss, int iter, int type, String curDir) {
+    private static void writeTournamentResults(String year, String[][] tournamentResults, double simulationLogLoss, int iter, int type, String curDir, int simIndex) {
         // FUNCTION TO WRITE TOURNAMENT RESULT TO CSV FILE
         try {
             iter++;
             FileWriter csvWriter = null;
             if (type == 0) {
-                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulations/Mean/meanSim_" + iter + ".csv");
+                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Mean/Simulations/meanSim_" + iter + ".csv");
             } else if (type == 1) {
-                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulations/Median/mediSim_" + iter + ".csv");
+                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Median/Simulations/mediSim_" + iter + ".csv");
             }
             assert csvWriter != null;
             csvWriter.append("LogLoss Score").append(",").append(String.valueOf(simulationLogLoss)).append("\n");
@@ -332,6 +339,8 @@ public class Main {
         }
         return tournamentResults;
     }
+
+//    private static void strategy_optimizeChances
 
     private static void strategy_1vs16seed(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb, String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
         if (tournamentResults[rowIndex][0].startsWith("R1") && tournamentResults[rowIndex][0].endsWith("1")) {
@@ -545,7 +554,7 @@ public class Main {
                     System.out.println("readApproxTrueProbFromFile() -- Read Mean: IOException.");
                 }
             } else if (type == 1) {
-                System.out.println("Calculating Median Approximate True Probabilities From File...");
+                System.out.println("Reading Median Approximate True Probabilities From File...");
                 try {
                     BufferedReader br = new BufferedReader(new FileReader(curDir + "/Results/" + year + "/Median-True-Prob-" + year + ".csv"));
                     String row = br.readLine();
@@ -856,21 +865,23 @@ public class Main {
         return csvFileList;
     }
 
-    private static void createDirectoryStructure() {
+    private static void createDirectoryStructure(int simIndex) {
         Path path = Paths.get("Other//..//Results//2016//Other//..//Simulations//Mean//..//Median//..//..//LogLoss_Leaderboard//Mean//..//Median//..//..//..//2017//Other//..//Simulations//Mean//..//Median//..//..//LogLoss_Leaderboard//Mean//..//Median");
         Path p1 = Paths.get("Other");
 
         Path p2 = Paths.get("Results//2016//Other");
-        Path p3 = Paths.get("Results//2016//LogLoss_Leaderboard//Mean");
-        Path p4 = Paths.get("Results//2016//LogLoss_Leaderboard//Median");
-        Path p5 = Paths.get("Results//2016//Simulations//Mean");
-        Path p6 = Paths.get("Results//2016//Simulations//Median");
+        Path p3 = Paths.get("Results//2016//Simulation_" + simIndex +  "//Mean//LogLoss_Leaderboard/");
+        Path p4 = Paths.get("Results//2016//Simulation_" + simIndex +  "//Median//LogLoss_Leaderboard/");
+        Path p5 = Paths.get("Results//2016//Simulation_" + simIndex +  "//Mean//Simulations/");
+        Path p6 = Paths.get("Results//2016//Simulation_" + simIndex +  "//Median//Simulations/");
 
         Path p7 = Paths.get("Results//2017//Other");
-        Path p8 = Paths.get("Results//2017//LogLoss_Leaderboard//Mean");
-        Path p9 = Paths.get("Results//2017//LogLoss_Leaderboard//Median");
-        Path p10 = Paths.get("Results//2017//Simulations//Mean");
-        Path p11 = Paths.get("Results//2017//Simulations//Median");
+        Path p8 = Paths.get("Results//2017//Simulation_" + simIndex +  "//Mean//LogLoss_Leaderboard/");
+        Path p9 = Paths.get("Results//2017//Simulation_" + simIndex +  "//Median//LogLoss_Leaderboard/");
+        Path p10 = Paths.get("Results//2017//Simulation_" + simIndex +  "//Mean//Simulations/");
+        Path p11 = Paths.get("Results//2017//Simulation_" + simIndex +  "//Median//Simulations/");
+
+
         try {
             Files.createDirectories(p1);
             Files.createDirectories(p2);
@@ -888,3 +899,8 @@ public class Main {
         }
     }
 }
+
+//  java Main 2016 0 1 50000 1 &
+//  java Main 2016 1 1 50000 1 &
+//  java Main 2017 0 1 50000 1 &
+//  java Main 2017 1 1 50000 1 &
