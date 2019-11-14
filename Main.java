@@ -1,5 +1,3 @@
-package com.company;
-
 import java.io.*;
 import java.util.*;
 import java.nio.file.*;
@@ -69,6 +67,9 @@ public class Main {
         // SIMULATE THE PLAY-IN MATCHES AND TOURNAMENT MULTIPLE TIMES
 //        double[] logLossScoreList = new double[totalIterations];
         for (int iteration = 0; iteration < totalIterations; iteration++) {
+	    if (iteration % 1000 == 0) {
+                System.out.println("Iteration: " + iteration);
+            }
             // SIMULATING PLAY-IN MATCHES
             String[][] playInTeamSeedsAndIDs = getSeeds(slots, 0);
             getPlayInTeamIDs(seeds, playInTeamSeedsAndIDs);
@@ -334,7 +335,7 @@ public class Main {
 
     private static void strategy_1vs16seed(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb, String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
         if (tournamentResults[rowIndex][0].startsWith("R1") && tournamentResults[rowIndex][0].endsWith("1")) {
-            System.out.println(tournamentResults[rowIndex][0]);
+//            System.out.println(tournamentResults[rowIndex][0]);
             for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
                 if (uniqueMatchUpIDs[j].equals(teamID)) {
                     tournamentResults[rowIndex][4] = "coinFlip";
