@@ -12,7 +12,7 @@ public class Main {
         int strategy = Integer.parseInt(args[3]);
         int simIndex = Integer.parseInt(args[4]);
 
-        int readFromFile = 0;
+        int readFromFile = 1;
 //        String year = "2017";
 //        int type = 0;
 //        int totalIterations = 1;
