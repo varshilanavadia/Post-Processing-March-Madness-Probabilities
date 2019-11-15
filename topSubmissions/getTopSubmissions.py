@@ -32,13 +32,15 @@ def initialize():
     count = 0
     print('Pooling data into numpy array...')
     for file in data_files:
-        if count % 1000 == 0:
-            print(count)
+        if count % 5000 == 0:
+            # print(str(count * 100 / 50000) + str('%'))
+            print '{0}{1}'.format(str(count * 100 / 50000), str('%'))
         my_data = np.genfromtxt(file, delimiter=",")
         my_data = my_data[1:6, (0, 2)]
         top_sub[count] = my_data.copy()
         count += 1
 
+    print()
     top_sub = top_sub.astype(int)
 
     print('Calculating the count of top submissions...')
@@ -52,18 +54,19 @@ def initialize():
     os.chdir('../../../../../topSubmissions/')
     if year == '2016' and prob_type == '0':
         print('Writing data frame to .csv file [2016-Mean]...')
-        df.to_csv('top_sub-2016-Mean.csv')
+        df.to_csv('top_sub-Sim_' + str(sim_index) + '-2016-Mean.csv')
     elif year == '2016' and prob_type == '1':
         print('Writing data frame to .csv file [2016-Median]...')
-        df.to_csv('top_sub-2016-Median.csv')
+        df.to_csv('top_sub-Sim_' + str(sim_index) + '-2016-Median.csv')
     elif year == '2017' and prob_type == '0':
         print('Writing data frame to .csv file [2017-Mean]...')
-        df.to_csv('top_sub-2017-Mean.csv')
+        df.to_csv('top_sub-Sim_' + str(sim_index) + '-2017-Mean.csv')
     elif year == '2017' and prob_type == '1':
         print('Writing data frame to .csv file [2017-Median]...')
-        df.to_csv('top_sub-2017-Median.csv')
+        df.to_csv('top_sub-Sim_' + str(sim_index) + '-2017-Median.csv')
 
     print('Done...')
+
 
 if __name__ == "__main__":
     print('Starting program...')

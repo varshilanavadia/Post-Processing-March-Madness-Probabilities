@@ -1,0 +1,9 @@
+python getTopSubmissions.py 2016 0 0 &
+python getTopSubmissions.py 2016 1 0 &
+python getTopSubmissions.py 2017 0 0 &
+python getTopSubmissions.py 2017 1 0 &
+
+python getTopSubmissions.py 2016 0 1 &
+python getTopSubmissions.py 2016 1 1 &
+python getTopSubmissions.py 2017 0 1 &
+python getTopSubmissions.py 2017 1 1 &
