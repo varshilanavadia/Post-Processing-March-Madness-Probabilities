@@ -34,7 +34,7 @@ def initialize():
     print('Pooling data into numpy array...')
     for file in data_files:
         if count % 5000 == 0:
-            print(str(count * 100 / 50000) + str('%'))
+            print(str(count * 100 / len(data_files)) + str('%') + "  |  Iteration : " + str(count))
         my_data = np.genfromtxt(file, delimiter=",")
         my_data = my_data[1:6, (0, 2)]
         top_sub[count] = my_data.copy()
