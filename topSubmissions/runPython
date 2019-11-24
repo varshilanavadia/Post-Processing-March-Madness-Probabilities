@@ -7,3 +7,34 @@ python getTopSubmissions.py 2016 0 1 &
 python getTopSubmissions.py 2016 1 1 &
 python getTopSubmissions.py 2017 0 1 &
 python getTopSubmissions.py 2017 1 1 &
+
+python getTopSubmissions.py 2016 1 2 &
+python getTopSubmissions.py 2017 1 2 &
+
+python getTopSubmissions.py 2016 1 3 &
+python getTopSubmissions.py 2017 1 3 &
+
+python getTopSubmissions.py 2016 0 4 &
+python getTopSubmissions.py 2016 1 4 &
+python getTopSubmissions.py 2017 0 4 &
+python getTopSubmissions.py 2017 1 4 &
+
+python getTopSubmissions.py 2016 0 5 &
+python getTopSubmissions.py 2016 1 5 &
+python getTopSubmissions.py 2017 0 5 &
+python getTopSubmissions.py 2017 1 5 &
+
+python getTopSubmissions.py 2016 0 6 &
+python getTopSubmissions.py 2016 1 6 &
+python getTopSubmissions.py 2017 0 6 &
+python getTopSubmissions.py 2017 1 6 &
+
+python getTopSubmissions.py 2016 0 7 &
+python getTopSubmissions.py 2016 1 7 &
+python getTopSubmissions.py 2017 0 7 &
+python getTopSubmissions.py 2017 1 7 &
+
+python getTopSubmissions.py 2016 0 8 &
+python getTopSubmissions.py 2016 1 8 &
+python getTopSubmissions.py 2017 0 8 &
+python getTopSubmissions.py 2017 1 8 &

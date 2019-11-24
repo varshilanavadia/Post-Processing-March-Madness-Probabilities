@@ -27,7 +27,7 @@ def initialize():
 
     # data_files = sorted(os.listdir("../Results/" + year + "/Simulation_" + str(sim_index) + ("/Mean/LogLoss_Leaderboard/" if prob_type == '0' else "/Median/LogLoss_Leaderboard/")))
     print('Getting all .csv files...')
-    data_files = glob.glob('*.csv')
+    data_files = sorted(glob.glob('*.csv'))
 
     top_sub = np.zeros(shape=(len(data_files), 5, 2))
     count = 0
@@ -64,6 +64,26 @@ def initialize():
     elif year == '2017' and prob_type == '1':
         print('Writing data frame to .csv file [2017-Median]...')
         df.to_csv('../../../../../topSubmissions/top_sub-Sim_' + str(sim_index) + '-2017-Median.csv')
+
+    df[0] = (df[0] * 10000) / len(data_files)
+    df[1] = (df[1] * 7000) / len(data_files)
+    df[2] = (df[2] * 5000) / len(data_files)
+    df[3] = (df[3] * 2000) / len(data_files)
+    df[4] = (df[4] * 1000) / len(data_files)
+
+    if year == '2016' and prob_type == '0':
+        print('Writing data frame to .csv file [2016-Mean]...')
+        df.to_csv('../../../../../topSubmissions/exp_pay-Sim_' + str(sim_index) + '-2016-Mean.csv')
+    elif year == '2016' and prob_type == '1':
+        print('Writing data frame to .csv file [2016-Median]...')
+        df.to_csv('../../../../../topSubmissions/exp_pay-Sim_' + str(sim_index) + '-2016-Median.csv')
+    elif year == '2017' and prob_type == '0':
+        print('Writing data frame to .csv file [2017-Mean]...')
+        df.to_csv('../../../../../topSubmissions/exp_pay-Sim_' + str(sim_index) + '-2017-Mean.csv')
+    elif year == '2017' and prob_type == '1':
+        print('Writing data frame to .csv file [2017-Median]...')
+        df.to_csv('../../../../../topSubmissions/exp_pay-Sim_' + str(sim_index) + '-2017-Median.csv')
+
 
     print('Done...')
 
