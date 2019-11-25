@@ -38,13 +38,33 @@
 #python getTopSubmissions.py 2016 1 8 &
 #python getTopSubmissions.py 2017 0 8 &
 #python getTopSubmissions.py 2017 1 8 &
+#
+#python getTopSubmissions.py 2016 0 9 &
+#python getTopSubmissions.py 2016 1 9 &
+#python getTopSubmissions.py 2017 0 9 &
+#python getTopSubmissions.py 2017 1 9 &
+#
+#python getTopSubmissions.py 2016 0 10 &
+#python getTopSubmissions.py 2016 1 10 &
+#python getTopSubmissions.py 2017 0 10 &
+#python getTopSubmissions.py 2017 1 10 &
 
-python getTopSubmissions.py 2016 0 9 &
-python getTopSubmissions.py 2016 1 9 &
-python getTopSubmissions.py 2017 0 9 &
-python getTopSubmissions.py 2017 1 9 &
+python getTopSubmissions.py 2016 0 11 &
+python getTopSubmissions.py 2016 1 11 &
+python getTopSubmissions.py 2017 0 11 &
+python getTopSubmissions.py 2017 1 11 &
 
-python getTopSubmissions.py 2016 0 10 &
-python getTopSubmissions.py 2016 1 10 &
-python getTopSubmissions.py 2017 0 10 &
-python getTopSubmissions.py 2017 1 10 &
+python getTopSubmissions.py 2016 0 13 &
+python getTopSubmissions.py 2016 1 13 &
+python getTopSubmissions.py 2017 0 13 &
+python getTopSubmissions.py 2017 1 13 &
+
+python getTopSubmissions.py 2016 0 12 &
+python getTopSubmissions.py 2016 1 12 &
+#python getTopSubmissions.py 2017 0 10 &
+#python getTopSubmissions.py 2017 1 10 &
+
+python getTopSubmissions.py 2016 0 14 &
+python getTopSubmissions.py 2016 1 14 &
+#python getTopSubmissions.py 2017 0 10 &
+#python getTopSubmissions.py 2017 1 10 &
