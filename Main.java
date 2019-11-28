@@ -6,18 +6,18 @@ public class Main {
     public static void main(String[] args) {
         // ARGUMENTS TO THE PROGRAM IN THE FOLLOWING ORDER
         // YEAR   TYPE   #ITERATIONS   STRATEGY   SIM_INDEX
-        String year = args[0];
-        int type = Integer.parseInt(args[1]);
-        int totalIterations = Integer.parseInt(args[2]);
-        int strategy = Integer.parseInt(args[3]);
-        int simIndex = Integer.parseInt(args[4]);
+//        String year = args[0];
+//        int type = Integer.parseInt(args[1]);
+//        int totalIterations = Integer.parseInt(args[2]);
+//        int strategy = Integer.parseInt(args[3]);
+//        int simIndex = Integer.parseInt(args[4]);
 
         int readFromFile = 1;
-//        String year = "2017";
-//        int type = 0;
-//        int totalIterations = 1;
-//        int strategy =  0;
-//        int simIndex = 0;
+        String year = "2016";
+        int type = 0;
+        int totalIterations = 100;
+        int strategy =  0;
+        int simIndex = 0;
 
         // CREATE DIRECTORY STRUCTURE TO STORE RESULTS
         createDirectoryStructure(simIndex);
@@ -109,8 +109,10 @@ public class Main {
         // System.out.printf("Average LogLoss score of %d simulations = %s%n", totalIterations, calculateMean(logLossScoreList));
 
         // GET THE RANKS OF OUR APPROX TRUE PROBABILITIES ACROSS ALL SIMULATIONS AND WRITE THEM OUT TO A FILE
+        System.out.println("Getting ranks of true probabilities...");
         getTrueProbRanksFromLeaderboard(year, type, curDir, simIndex);
 
+        System.out.println("Program Execution Complete!");
     }
 
     private static void getTrueProbRanksFromLeaderboard(String year, int type, String curDir, int simIndex) {
@@ -166,7 +168,8 @@ public class Main {
         }
     }
 
-    private static void writeLogLossLeaderboard(String year, double[][] logLossLeaderboard, int iter, int type, String curDir, int simIndex) {
+    private static void writeLogLossLeaderboard(String year, double[][] logLossLeaderboard, int iter, int type,
+                                                String curDir, int simIndex) {
         StringBuilder builder = new StringBuilder();
         builder.append("RANK").append(",").append("LOG LOSS").append(",").append("SERIAL #").append("\n");
         for (double[] prediction : logLossLeaderboard) {
@@ -177,10 +180,10 @@ public class Main {
             iter++;
             if (type == 0) {
                 writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year +
-                        "/Simulation_" + simIndex + "/Mean/LogLoss_Leaderboard/leaderboard_" + iter + "_" + year + ".csv"));
+                        "/Simulation_" + simIndex + "/Mean/LogLoss_Leaderboard/leaderboard_" + String.format("%05d", iter) + "_" + year + ".csv"));
             } else if (type == 1) {
                 writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year +
-                        "/Simulation_" + simIndex + "/Median/LogLoss_Leaderboard/leaderboard_" + iter + "_" + year + ".csv"));
+                        "/Simulation_" + simIndex + "/Median/LogLoss_Leaderboard/leaderboard_" + String.format("%05d", iter) + "_" + year + ".csv"));
             }
             assert writer != null;
             writer.write(builder.toString());
@@ -194,7 +197,8 @@ public class Main {
         java.util.Arrays.sort(array, Comparator.comparingDouble(a -> a[col]));
     }
 
-    private static double[][] calculateAllLogLosses(String year, String[][] tournamentResults, double[][] tourneyPredFromSubmissions, double simulationLogLoss, int iteration, int type, String curDir, int simIndex) {
+    private static double[][] calculateAllLogLosses(String year, String[][] tournamentResults, double[][] tourneyPredFromSubmissions,
+                                                    double simulationLogLoss, int iteration, int type, String curDir, int simIndex) {
         // CALCULATE ALL SUBMISSION LOG LOSSES
         // System.out.println("Preparing the leaderboard and ranking all log loss scores...");
         double[][] logLossLeaderboard = new double[tourneyPredFromSubmissions[0].length + 1][3];
@@ -222,7 +226,8 @@ public class Main {
         return logLossLeaderboard;
     }
 
-    private static double[][] getPredictionsFromSubmissions(String year, double[][] predictions, String[][] tournamentResults, String[] uniqueMatchUpIDs) {
+    private static double[][] getPredictionsFromSubmissions(String year, double[][] predictions, String[][] tournamentResults,
+                                                            String[] uniqueMatchUpIDs) {
         double[][] tourneyPredFromSubmissions = new double[tournamentResults.length][predictions[0].length];
         for (int i = 0; i < tournamentResults.length; i++) {
             for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
@@ -260,15 +265,16 @@ public class Main {
                 ((1 - Double.parseDouble(actualOutcome)) * Math.log(1 - Double.parseDouble(meanPred))));
     }
 
-    private static void writeTournamentResults(String year, String[][] tournamentResults, double simulationLogLoss, int iter, int type, String curDir, int simIndex) {
+    private static void writeTournamentResults(String year, String[][] tournamentResults, double simulationLogLoss, int iter,
+                                               int type, String curDir, int simIndex) {
         // FUNCTION TO WRITE TOURNAMENT RESULT TO CSV FILE
         try {
             iter++;
             FileWriter csvWriter = null;
             if (type == 0) {
-                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Mean/Simulations/meanSim_" + iter + ".csv");
+                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Mean/Simulations/meanSim_" + String.format("%05d", iter) + ".csv");
             } else if (type == 1) {
-                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Median/Simulations/mediSim_" + iter + ".csv");
+                csvWriter = new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Median/Simulations/mediSim_" + String.format("%05d", iter) + ".csv");
             }
             assert csvWriter != null;
             csvWriter.append("LogLoss Score").append(",").append(String.valueOf(simulationLogLoss)).append("\n");
@@ -288,7 +294,8 @@ public class Main {
         }
     }
 
-    private static String[][] simulateTournament(String year, String[][] tourneyStartSeedsAndIDs, String[] uniqueMatchUpIDs, double[] approxTrueProb, String[][] slots, int strategy) {
+    private static String[][] simulateTournament(String year, String[][] tourneyStartSeedsAndIDs, String[] uniqueMatchUpIDs,
+                                                 double[] approxTrueProb, String[][] slots, int strategy) {
         // FUNCTION TO SIMULATE THE TOURNAMENT
         // DATA IS STORED IN 'tournamentResults' IN THE FOLLOWING ORDER,
         // [SLOT, TEAM1_ID, TEAM2_ID, WINNER_TEAM_ID, COIN_FLIP, MEAN_PREDICTION, 0/1 FLAG IF TEAM 1 BEAT TEAM 2]
@@ -323,7 +330,11 @@ public class Main {
                     // IMPLEMENT NORMAL STRATEGY
                     strategy_normal(tournamentResults, uniqueMatchUpIDs, approxTrueProb, teamID, teamLowerID, teamHigherID, rowIndex);
                 } else if (strategy == 1) {
+                    // 1-SEED VS 16-SEED STRATEGY
                     strategy_1vs16seed(tournamentResults, uniqueMatchUpIDs, approxTrueProb, teamID, teamLowerID, teamHigherID, rowIndex);
+                } else if (strategy == 2) {
+                    // MAXIMIZE AND MINIMIZE CHANCES IF PROB > 0.9 AND < 0.1 RESPECTIVELY
+                    strategy_optimizeChances(tournamentResults, uniqueMatchUpIDs, approxTrueProb, teamID, teamLowerID, teamHigherID, rowIndex);
                 }
 
                 // UPDATE 'tournamentResults' WITH EACH UPDATE/MATCH SIMULATION (ITERATION)
@@ -340,9 +351,42 @@ public class Main {
         return tournamentResults;
     }
 
-//    private static void strategy_optimizeChances
+    private static void strategy_optimizeChances(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb,
+                                                 String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
+        double upperLimit = 0.75;
+        double lowerLimit = 0.15;
+        for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
+            if (uniqueMatchUpIDs[j].equals(teamID)) {
+                double coinFlip = flipTheCoin();
+                tournamentResults[rowIndex][4] = String.valueOf(coinFlip);
+                // MAXIMIZE CHANCES IF PROB OF WINNING IS 90%
+                // MINIMIZE CHANCES IF PROB OF LOSING IS 10%
+                if (approxTrueProb[j] > upperLimit) {
+                    tournamentResults[rowIndex][5] = String.valueOf(0.9999999999);
+                } else if (approxTrueProb[j] < lowerLimit) {
+                    tournamentResults[rowIndex][5] = String.valueOf(0.0000000001);
+                } else {
+                    tournamentResults[rowIndex][5] = String.valueOf(approxTrueProb[j]);
+                }
 
-    private static void strategy_1vs16seed(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb, String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
+                if (coinFlip <= Double.parseDouble(tournamentResults[rowIndex][5])) {
+                    tournamentResults[rowIndex][3] = teamLowerID;
+                    tournamentResults[rowIndex][6] = String.valueOf(1);
+                } else {
+                    tournamentResults[rowIndex][3] = teamHigherID;
+                    tournamentResults[rowIndex][6] = String.valueOf(0);
+                }
+
+                if (approxTrueProb[j] > upperLimit ||  approxTrueProb[j] < lowerLimit) {
+                    System.out.println(Arrays.toString(tournamentResults[rowIndex]) + "\t" + approxTrueProb[j]);
+                }
+
+            }
+        }
+    }
+
+    private static void strategy_1vs16seed(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb,
+                                           String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
         if (tournamentResults[rowIndex][0].startsWith("R1") && tournamentResults[rowIndex][0].endsWith("1")) {
 //            System.out.println(tournamentResults[rowIndex][0]);
             for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
@@ -358,7 +402,8 @@ public class Main {
         }
     }
 
-    private static void strategy_normal(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb, String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
+    private static void strategy_normal(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb,
+                                        String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
         for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
             if (uniqueMatchUpIDs[j].equals(teamID)) {
                 double coinFlip = flipTheCoin();
@@ -695,7 +740,6 @@ public class Main {
             for (int j = 0; j < teamIdList[0].length; j++) {
                 for (int k = 0; k < teamIdList.length; k++) {
                     if (uniqueMatchUpIDs[i].equals(teamIdList[k][j])) {
-//                        System.out.println(i + "  " + j + "  " + k + "  " +uniqueMatchUpIDs[i] + "  " + teamIdList[k][j]);
                         orderedPredictions[i][j] = predictions[k][j];
                         f = 1;
                     } else if (f == 1) {
@@ -899,8 +943,3 @@ public class Main {
         }
     }
 }
-
-//  java Main 2016 0 1 50000 1 &
-//  java Main 2016 1 1 50000 1 &
-//  java Main 2017 0 1 50000 1 &
-//  java Main 2017 1 1 50000 1 &
