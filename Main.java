@@ -6,18 +6,18 @@ public class Main {
     public static void main(String[] args) {
         // ARGUMENTS TO THE PROGRAM IN THE FOLLOWING ORDER
         // YEAR   TYPE   #ITERATIONS   STRATEGY   SIM_INDEX
-//        String year = args[0];
-//        int type = Integer.parseInt(args[1]);
-//        int totalIterations = Integer.parseInt(args[2]);
-//        int strategy = Integer.parseInt(args[3]);
-//        int simIndex = Integer.parseInt(args[4]);
+        String year = args[0];
+        int type = Integer.parseInt(args[1]);
+        int totalIterations = Integer.parseInt(args[2]);
+        int strategy = Integer.parseInt(args[3]);
+        int simIndex = Integer.parseInt(args[4]);
 
         int readFromFile = 1;
-        String year = "2016";
-        int type = 0;
-        int totalIterations = 100;
-        int strategy =  0;
-        int simIndex = 0;
+//        String year = "2016";
+//        int type = 0;
+//        int totalIterations = 100;
+//        int strategy =  0;
+//        int simIndex = 0;
 
         // CREATE DIRECTORY STRUCTURE TO STORE RESULTS
         createDirectoryStructure(simIndex);
@@ -71,11 +71,12 @@ public class Main {
                                  String curDir, int strategy, int simIndex) {
         // SIMULATE THE PLAY-IN MATCHES AND TOURNAMENT MULTIPLE TIMES
 //        double[] logLossScoreList = new double[totalIterations];
+        int step = totalIterations/100;
         for (int iteration = 0; iteration < totalIterations; iteration++) {
             // SIMULATING PLAY-IN MATCHES
 
-            if (iteration % 1000 == 0) {
-                System.out.println("Iteration: " + iteration);
+            if (iteration % step == 0) {
+                System.out.println("\t" + (((iteration*100)/totalIterations) + 1) + "%  |  Iteration: " + iteration);
             }
 
             String[][] playInTeamSeedsAndIDs = getSeeds(slots, 0);
