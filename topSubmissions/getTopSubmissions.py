@@ -12,8 +12,16 @@ import sys
 import numpy as np
 import pandas as pd
 import matplotlib
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
+
+def get_team_match_up(year, team_a, team_b):
+    if team_a < team_b:
+        return year + "_" + str(team_a) + "_" + str(team_b)
+    else:
+        return year + "_" + str(team_b) + "_" + str(team_a)
 
 
 def initialize():
@@ -62,7 +70,8 @@ def initialize():
     # CHANGING COLUMN NAMES
     df.columns = ['Rank 1', 'Rank 2', 'Rank 3', 'Rank 4', 'Rank 5']
 
-    os.chdir('../../../../../topSubmissions/Number of wins' + ('/Mean Prob/' if prob_type == '0' else '/Median Prob/') + year + '/')
+    os.chdir('../../../../../topSubmissions/Number of wins' + (
+        '/Mean Prob/' if prob_type == '0' else '/Median Prob/') + year + '/')
 
     if year == '2016' and prob_type == '0':
         print('Writing \'Number of wins\' [2016-Mean] to .csv file ...')
@@ -131,11 +140,16 @@ def initialize():
 
     # GETTING MEDIAN PREDICTIONS
     trueProb = pd.read_csv(("Mean" if prob_type == '0' else "Median") + "-True-Prob-" + year + ".csv", header=None)
+    unique_match_ups = pd.read_csv("Unique-MatchUp-IDs-" + year + ".csv", header=None)
 
-    os.chdir('../../topSubmissions/Expected Payout' + ('/Mean Prob/' if prob_type == '0' else '/Median Prob/') + year + '/Simulation_' + str(sim_index))
+    os.chdir('../../topSubmissions/Expected Payout' + (
+        '/Mean Prob/' if prob_type == '0' else '/Median Prob/') + year + '/Simulation_' + str(sim_index))
     # DEFINING SCATTER PLOT PARAMETERS
     alp = 0.5
     ar = 10
+    res = 720
+
+    # CREATE SCATTER PLOT WITH ALL PROBABILITIES
     for i in range(len(topRanks.T)):
         plt.plot([0, 1], c='r')
         plt.scatter(trueProb, topRanks.iloc[:, i], alpha=alp, s=ar)
@@ -144,11 +158,37 @@ def initialize():
         # plt.title('Scatter')
         plt.xlabel('App. True Prob ' + (
             '[Mean]' if prob_type == '0' else '[Median]'))
-        plt.ylabel('Rank ' + str(i+1) + ' Prob')
-        plt.savefig(str(i+1) + '.png', dpi=720)
+        plt.ylabel('Rank ' + str(i + 1) + ' Prob')
+        plt.savefig(str(i + 1) + '.png', dpi=res)
         plt.close()
 
     os.chdir('../../../../../')
+    # GETTING THE ROUND 1 SLOTS AND SEEDS
+    os.chdir('Data/' + year + '/' + year + '-Round1/')
+    round1Slots = pd.read_csv("Slots" + year + "-Round1.csv", header=None)
+
+    # GET THE INDEX OF ROUND 1 MATCH UPS AND GET CORRESPONDING PREDICTIONS
+    index_list = []
+    for i in range(len(round1Slots)):
+        team_match_up = get_team_match_up(year, round1Slots.iloc[i, 2], round1Slots.iloc[i, 3])
+        indx = unique_match_ups.index[unique_match_ups[0] == team_match_up]
+        index_list.append(indx[0])
+
+    topRanks_round1 = topRanks.iloc[index_list]
+    trueProb_round1 = trueProb.iloc[index_list]
+
+    # CREATE SCATTER PLOT WITH ROUND 1 PROBABILITIES ONLY
+    os.chdir('../../../topSubmissions/Expected Payout' + (
+        '/Mean Prob/' if prob_type == '0' else '/Median Prob/') + year + '/Simulation_' + str(sim_index))
+    for i in range(len(topRanks_round1.T)):
+        plt.plot([0, 1], c='r')
+        plt.scatter(trueProb_round1, topRanks_round1.iloc[:, i], alpha=alp, s=ar)
+        plt.title('Round 1 Probabilities')
+        plt.xlabel('App. True Prob ' + (
+            '[Mean]' if prob_type == '0' else '[Median]'))
+        plt.ylabel('Rank ' + str(i + 1) + ' Prob')
+        plt.savefig('Round1_' + str(i + 1) + '.png', dpi=res)
+        plt.close()
 
     print('Done...')
 
