@@ -95,6 +95,7 @@ def initialize():
     # ADDING COLUMN FOR TOTAL NUMBER OF WINS AND CALCULATING IT
     df.insert(5, 'Total', 0)
     df['Total'] = df.sum(axis=1)
+    df = df.sort_values(by=['Total'], ascending=False)
 
     os.chdir('../../../Expected Payout' + (
         '/Mean Prob/' if prob_type == '0' else '/Median Prob/') + year)
