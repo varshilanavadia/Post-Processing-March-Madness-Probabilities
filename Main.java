@@ -1,4 +1,5 @@
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.nio.file.*;
 
@@ -11,6 +12,12 @@ public class Main {
         int totalIterations = Integer.parseInt(args[2]);
         int strategy = Integer.parseInt(args[3]);
         int simIndex = Integer.parseInt(args[4]);
+
+        // MARK THE TIME PROGRAMS STARTED EXECUTION
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/YYYY  KK:mm:ss a");
+        System.out.print("Starting execution at ");
+        System.out.println(sdf.format(cal.getTime()));
 
         int readFromFile = 1;
 //        String year = "2016";
@@ -64,6 +71,10 @@ public class Main {
 
         simulate(year, totalIterations, type, approxTrueProb, uniqueMatchUpIDs, predictions, seeds, slots, curDir, strategy, simIndex);
 
+        System.out.println("Program Execution Complete!");
+
+        System.out.print("Ending execution at ");
+        System.out.println(sdf.format(cal.getTime()));
     }
 
     private static void simulate(String year, int totalIterations, int type, double[] approxTrueProb,
@@ -112,8 +123,6 @@ public class Main {
         // GET THE RANKS OF OUR APPROX TRUE PROBABILITIES ACROSS ALL SIMULATIONS AND WRITE THEM OUT TO A FILE
         System.out.println("Getting ranks of true probabilities...");
         getTrueProbRanksFromLeaderboard(year, type, curDir, simIndex);
-
-        System.out.println("Program Execution Complete!");
     }
 
     private static void getTrueProbRanksFromLeaderboard(String year, int type, String curDir, int simIndex) {
