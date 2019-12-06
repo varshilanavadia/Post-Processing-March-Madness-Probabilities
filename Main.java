@@ -18,6 +18,11 @@ public class Main {
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/YYYY  KK:mm:ss a");
         System.out.print("Starting execution at ");
         System.out.println(sdf.format(cal.getTime()));
+        System.out.println("YEAR      : " + year);
+        System.out.println("PROB TYPE : " + type);
+        System.out.println("STRATEGY #: " + strategy);
+        System.out.println("# ITER    : " + totalIterations);
+        System.out.println("SIM INDEX : " + simIndex);
 
         int readFromFile = 1;
 //        String year = "2016";
@@ -30,7 +35,7 @@ public class Main {
         createDirectoryStructure(simIndex);
 
         // IMPORT DATA
-        System.out.println("\nImporting data for " + year + "...");
+        System.out.println("Importing data for " + year + "...");
         String curDir = System.getProperty("user.dir");
         String dataPath = curDir + "/Data/" + year + "/";
         File dataFiles = new File(dataPath);
@@ -70,10 +75,10 @@ public class Main {
         double[] approxTrueProb = calculateApproxTrueProb(year, predictions, type, readFromFile, curDir);
 
         simulate(year, totalIterations, type, approxTrueProb, uniqueMatchUpIDs, predictions, seeds, slots, curDir, strategy, simIndex);
-
         System.out.println("Program Execution Complete!");
 
         System.out.print("Ending execution at ");
+        cal = Calendar.getInstance();
         System.out.println(sdf.format(cal.getTime()));
     }
 
@@ -87,7 +92,7 @@ public class Main {
             // SIMULATING PLAY-IN MATCHES
 
             if (iteration % step == 0) {
-                System.out.println("\t" + (((iteration*100)/totalIterations) + 1) + "%  |  Iteration: " + iteration);
+                System.out.println("\t" + (((iteration*100)/totalIterations)) + "%  |  Iteration: " + iteration);
             }
 
             String[][] playInTeamSeedsAndIDs = getSeeds(slots, 0);
@@ -115,6 +120,7 @@ public class Main {
             // System.out.println("LogLoss Score : " + simulationLogLoss);
         }
 
+        System.out.println("\t100%  |  Iteration: " + totalIterations);
         System.out.println("Simulation Complete!");
 
         // // DISPLAYING AVERAGE LOGLOSS SCORE FROM 'totalIterations' SIMULATIONS

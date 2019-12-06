@@ -11,6 +11,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+from datetime import datetime
 import matplotlib
 
 matplotlib.use('Agg')
@@ -197,5 +198,13 @@ def initialize():
 
 
 if __name__ == "__main__":
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    print("Start Time : " + dt_string)
+
     print('Starting program with following parameters...')
     initialize()
+
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+    print("End Time : " + dt_string)
