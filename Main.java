@@ -351,6 +351,9 @@ public class Main {
                 } else if (strategy == 2) {
                     // MAXIMIZE AND MINIMIZE CHANCES IF PROB > 0.9 AND < 0.1 RESPECTIVELY
                     strategy_optimizeChances(tournamentResults, uniqueMatchUpIDs, approxTrueProb, teamID, teamLowerID, teamHigherID, rowIndex);
+                } else if (strategy == 3) {
+                    // SQUEEZE PROBABILITIES BETWEEN 0.9 AND 0.1
+                    strategy_squeezeProbabilities(tournamentResults, uniqueMatchUpIDs, approxTrueProb, teamID, teamLowerID, teamHigherID, rowIndex);
                 }
 
                 // UPDATE 'tournamentResults' WITH EACH UPDATE/MATCH SIMULATION (ITERATION)
@@ -367,13 +370,44 @@ public class Main {
         return tournamentResults;
     }
 
-    private static void strategy_optimizeChances(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb,
-                                                 String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
-        double upperLimit = 0.75;
-        double lowerLimit = 0.15;
+    private static void strategy_squeezeProbabilities(String[][] tournamentResults, String[] uniqueMatchUpIDs,
+                                                      double[] approxTrueProb, String teamID, String teamLowerID,
+                                                      String teamHigherID, int rowIndex){
+        double upperLimit = 0.9;
+        double lowerLimit = 0.1;
+        double coinFlip;
         for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
             if (uniqueMatchUpIDs[j].equals(teamID)) {
-                double coinFlip = flipTheCoin();
+                coinFlip = flipTheCoin();
+                tournamentResults[rowIndex][4] = String.valueOf(coinFlip);
+
+                if (approxTrueProb[j] > upperLimit) {
+                    tournamentResults[rowIndex][5] = String.valueOf(0.9);
+                } else if (approxTrueProb[j] < lowerLimit) {
+                    tournamentResults[rowIndex][5] = String.valueOf(0.1);
+                } else {
+                    tournamentResults[rowIndex][5] = String.valueOf(approxTrueProb[j]);
+                }
+
+                if (coinFlip <= Double.parseDouble(tournamentResults[rowIndex][5])) {
+                    tournamentResults[rowIndex][3] = teamLowerID;
+                    tournamentResults[rowIndex][6] = String.valueOf(1);
+                } else {
+                    tournamentResults[rowIndex][3] = teamHigherID;
+                    tournamentResults[rowIndex][6] = String.valueOf(0);
+                }
+            }
+        }
+    }
+
+    private static void strategy_optimizeChances(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb,
+                                                 String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
+        double upperLimit = 0.8;
+        double lowerLimit = 0.2;
+        double coinFlip;
+        for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
+            if (uniqueMatchUpIDs[j].equals(teamID)) {
+                coinFlip = flipTheCoin();
                 tournamentResults[rowIndex][4] = String.valueOf(coinFlip);
                 // MAXIMIZE CHANCES IF PROB OF WINNING IS 90%
                 // MINIMIZE CHANCES IF PROB OF LOSING IS 10%
@@ -420,9 +454,10 @@ public class Main {
 
     private static void strategy_normal(String[][] tournamentResults, String[] uniqueMatchUpIDs, double[] approxTrueProb,
                                         String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
+        double coinFlip;
         for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
             if (uniqueMatchUpIDs[j].equals(teamID)) {
-                double coinFlip = flipTheCoin();
+                coinFlip = flipTheCoin();
                 tournamentResults[rowIndex][4] = String.valueOf(coinFlip);
                 tournamentResults[rowIndex][5] = String.valueOf(approxTrueProb[j]);
                 if (coinFlip <= approxTrueProb[j]) {
