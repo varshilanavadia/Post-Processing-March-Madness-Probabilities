@@ -13,23 +13,24 @@ public class Main {
         int strategy = Integer.parseInt(args[3]);
         int simIndex = Integer.parseInt(args[4]);
 
-        // MARK THE TIME PROGRAMS STARTED EXECUTION
+        int readFromFile = 1;
+        int numPostProcessProbs = 14;
+//        String year = "2017";
+//        int type = 1;
+//        int totalIterations = 100;
+//        int strategy =  0;
+//        int simIndex = 0;
+
+        // MARK THE TIME PROGRAM STARTED EXECUTION
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/YYYY  KK:mm:ss a");
-        System.out.print("Starting execution at ");
+        System.out.print("\n\nStarting execution at ");
         System.out.println(sdf.format(cal.getTime()));
         System.out.println("YEAR      : " + year);
         System.out.println("PROB TYPE : " + type);
         System.out.println("STRATEGY #: " + strategy);
         System.out.println("# ITER    : " + totalIterations);
         System.out.println("SIM INDEX : " + simIndex);
-
-        int readFromFile = 1;
-//        String year = "2016";
-//        int type = 0;
-//        int totalIterations = 100;
-//        int strategy =  0;
-//        int simIndex = 0;
 
         // CREATE DIRECTORY STRUCTURE TO STORE RESULTS
         createDirectoryStructure(simIndex);
@@ -51,6 +52,11 @@ public class Main {
         List<File> csvFileList = getAllFiles(dataFiles, new ArrayList<>(), true);
 //        writeCSVFileList(year, csvFileList, curDir);
 
+        // READING IDS, PREDICTION AND UNIQUE MATCH UPS FROM SINGLE FILE
+//        String[][] teamIdList = readTeamIDsFromCSV(year, csvFileList, curDir);
+        String[] uniqueMatchUpIDs = readUniqueMatchUpIDsFromCSV(year, curDir);
+        double[][] predictions = readPredictionsFromCSV(year, csvFileList, curDir, numPostProcessProbs);
+
         // STORING IDS AND PREDICTIONS FROM ALL SUBMISSIONS INTO VARIABLES
         // CREATING A LIST OF 2278 UNIQUE POSSIBLE MATCHUPS [MATCHUP = YEAR_TEAM1_TEAM2]
         // WRITING IDS AND PREDICITONS TO CSV FOR REFERENCE
@@ -62,11 +68,6 @@ public class Main {
 //        writeUniqueMatchUpIDsToCSV(year, uniqueMatchUpIDs, curDir);
 //        writeTeamIDstoCSV(year, teamIdList, curDir);
 
-        // READING IDS, PREDICTION AND UNIQUE MATCH UPS FROM SINGLE FILE
-        // String[][] teamIdList = readTeamIDsFromCSV(year, csvFileList, curDir);
-         String[] uniqueMatchUpIDs = readUniqueMatchUpIDsFromCSV(year, curDir);
-         double[][] predictions = readPredictionsFromCSV(year, csvFileList, curDir);
-
         // CALCULATING APPROXIMATE TRUE PROBABILITIES [MEAN OR MEDIAN]
         //         'type' = 0 CALCULATE MEAN TRUE PROBABILITIES
         //                = 1 CALCULATE MEDIAN TRUE PROBABILITIES
@@ -74,9 +75,10 @@ public class Main {
         //                = 1 READ MEDIAN TRUE PROBABILITIES FROM FILE
         double[] approxTrueProb = calculateApproxTrueProb(year, predictions, type, readFromFile, curDir);
 
-        simulate(year, totalIterations, type, approxTrueProb, uniqueMatchUpIDs, predictions, seeds, slots, curDir, strategy, simIndex);
-        System.out.println("Program Execution Complete!");
+        simulate(year, totalIterations, type, approxTrueProb, uniqueMatchUpIDs, predictions, seeds, slots, curDir, strategy, simIndex, numPostProcessProbs);
 
+        // MARK THE TIME PROGRAM ENDED EXECUTION
+        System.out.println("Program Execution Complete!");
         System.out.print("Ending execution at ");
         cal = Calendar.getInstance();
         System.out.println(sdf.format(cal.getTime()));
@@ -84,7 +86,7 @@ public class Main {
 
     private static void simulate(String year, int totalIterations, int type, double[] approxTrueProb,
                                  String[] uniqueMatchUpIDs, double[][] predictions, String[][] seeds, String[][] slots,
-                                 String curDir, int strategy, int simIndex) {
+                                 String curDir, int strategy, int simIndex, int numPostProcessProbs) {
         // SIMULATE THE PLAY-IN MATCHES AND TOURNAMENT MULTIPLE TIMES
 //        double[] logLossScoreList = new double[totalIterations];
         int step = totalIterations/100;
@@ -128,16 +130,26 @@ public class Main {
 
         // GET THE RANKS OF OUR APPROX TRUE PROBABILITIES ACROSS ALL SIMULATIONS AND WRITE THEM OUT TO A FILE
         System.out.println("Getting ranks of true probabilities...");
-        getTrueProbRanksFromLeaderboard(year, type, curDir, simIndex);
+        getTrueProbRanksFromLeaderboard(year, type, curDir, simIndex, numPostProcessProbs);
     }
 
-    private static void getTrueProbRanksFromLeaderboard(String year, int type, String curDir, int simIndex) {
-        int rank;
+    private static void getTrueProbRanksFromLeaderboard(String year, int type, String curDir, int simIndex, int numPostProcessProbs) {
+        int[] rank = new int[numPostProcessProbs + 1];
         File leaderboardFiles;
+        String[] tags = {"none", "S2A_Mean",   "S2B_Mean",   "S2C_Mean",   "S3A_Mean",   "S3B_Mean",   "S3C_Mean",
+                                 "S2A_Median", "S2B_Median", "S2C_Median", "S3A_Median", "S3B_Median", "S3C_Median",
+                                 "S1_Mean",    "S1_Median"};
+        int base;
         if (year.equals("2016")) {
-            rank = 1085;
+            base = 1085;
+            for (int i = 0; i < numPostProcessProbs + 1; i++) {
+                rank[i] = base + i;
+            }
         } else {
-            rank = 775;
+            base = 775;
+            for (int i = 0; i < numPostProcessProbs + 1; i++) {
+                rank[i] = base + i;
+            }
         }
         if (type == 0) {
             leaderboardFiles = new File(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Mean/LogLoss_Leaderboard/");
@@ -145,42 +157,44 @@ public class Main {
             leaderboardFiles = new File(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/Median/LogLoss_Leaderboard/");
         }
         List<File> fileList = getAllFiles(leaderboardFiles, new ArrayList<>(), false);
-        List<Integer> trueProbRank = new ArrayList<>();
-        for (File file : fileList) {
-            BufferedReader br;
-            try {
-                br = new BufferedReader(new FileReader(file));
-                String row = br.readLine();
-                while (row != null) {
-                    String[] data = row.split(",");
-                    if (!data[2].startsWith("S") && Integer.parseInt(data[2]) == rank) {
-                        trueProbRank.add(Integer.valueOf(data[0]));
+        for (int value : rank) {
+            List<Integer> trueProbRank = new ArrayList<>();
+            for (File file : fileList) {
+                BufferedReader br;
+                try {
+                    br = new BufferedReader(new FileReader(file));
+                    String row = br.readLine();
+                    while (row != null) {
+                        String[] data = row.split(",");
+                        if (!data[2].startsWith("S") && Integer.parseInt(data[2]) == value) {
+                            trueProbRank.add(Integer.valueOf(data[0]));
+                        }
+                        row = br.readLine();
                     }
-                    row = br.readLine();
+                    br.close();
+                } catch (IOException e) {
+                    System.out.println("IOException");
                 }
-                br.close();
-            } catch (IOException e) {
-                System.out.println("IOException");
             }
-        }
 
-        // WRITE THEM OUT TO A FILE
-        StringBuilder builder = new StringBuilder();
-        for (Integer integer : trueProbRank) {
-            builder.append(integer).append("\n");
-        }
-        try {
-            BufferedWriter writer = null;
-            if (type == 0) {
-                writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/RanksOf-Mean-" + year + ".csv"));
-            } else if (type == 1) {
-                writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/RanksOf-Median-" + year + ".csv"));
+            // WRITE THEM OUT TO A FILE
+            StringBuilder builder = new StringBuilder();
+            for (Integer integer : trueProbRank) {
+                builder.append(integer).append("\n");
             }
-            assert writer != null;
-            writer.write(builder.toString());
-            writer.close();
-        } catch (IOException e) {
-            System.out.println("getTrueProbRanksFromLeaderboard() : File writing issue.");
+            try {
+                BufferedWriter writer = null;
+                if (type == 0) {
+                    writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/RanksOf-Mean-" + year + "_" + tags[value-base] + ".csv"));
+                } else if (type == 1) {
+                    writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year + "/Simulation_" + simIndex + "/RanksOf-Median-" + year + "_" + tags[value-base] + ".csv"));
+                }
+                assert writer != null;
+                writer.write(builder.toString());
+                writer.close();
+            } catch (IOException e) {
+                System.out.println("getTrueProbRanksFromLeaderboard() : File writing issue.");
+            }
         }
     }
 
@@ -196,10 +210,10 @@ public class Main {
             iter++;
             if (type == 0) {
                 writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year +
-                        "/Simulation_" + simIndex + "/Mean/LogLoss_Leaderboard/leaderboard_" + String.format("%05d", iter) + "_" + year + ".csv"));
+                        "/Simulation_" + simIndex + "/Mean/LogLoss_Leaderboard/leaderboard_" + String.format("%06d", iter) + "_" + year + ".csv"));
             } else if (type == 1) {
                 writer = new BufferedWriter(new FileWriter(curDir + "/Results/" + year +
-                        "/Simulation_" + simIndex + "/Median/LogLoss_Leaderboard/leaderboard_" + String.format("%05d", iter) + "_" + year + ".csv"));
+                        "/Simulation_" + simIndex + "/Median/LogLoss_Leaderboard/leaderboard_" + String.format("%06d", iter) + "_" + year + ".csv"));
             }
             assert writer != null;
             writer.write(builder.toString());
@@ -373,18 +387,21 @@ public class Main {
     private static void strategy_squeezeProbabilities(String[][] tournamentResults, String[] uniqueMatchUpIDs,
                                                       double[] approxTrueProb, String teamID, String teamLowerID,
                                                       String teamHigherID, int rowIndex){
-        double upperLimit = 0.9;
-        double lowerLimit = 0.1;
+        double upperLimit = 0.8;
+        double lowerLimit = 0.2;
+        double maxProb = 0.8;
+        double minProb = 0.2;
         double coinFlip;
         for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
             if (uniqueMatchUpIDs[j].equals(teamID)) {
                 coinFlip = flipTheCoin();
                 tournamentResults[rowIndex][4] = String.valueOf(coinFlip);
-
+                // IF PROB IS GREATER THAN 0.9, SET IT TO 0.9
+                // IF PROB IS LESS THAN 0.1, SET IT TO 0.1
                 if (approxTrueProb[j] > upperLimit) {
-                    tournamentResults[rowIndex][5] = String.valueOf(0.9);
+                    tournamentResults[rowIndex][5] = String.valueOf(maxProb);
                 } else if (approxTrueProb[j] < lowerLimit) {
-                    tournamentResults[rowIndex][5] = String.valueOf(0.1);
+                    tournamentResults[rowIndex][5] = String.valueOf(minProb);
                 } else {
                     tournamentResults[rowIndex][5] = String.valueOf(approxTrueProb[j]);
                 }
@@ -404,17 +421,19 @@ public class Main {
                                                  String teamID, String teamLowerID, String teamHigherID, int rowIndex) {
         double upperLimit = 0.8;
         double lowerLimit = 0.2;
+        double maxProb = 0.9999999999;
+        double minProb = 0.0000000001;
         double coinFlip;
         for (int j = 0; j < uniqueMatchUpIDs.length; j++) {
             if (uniqueMatchUpIDs[j].equals(teamID)) {
                 coinFlip = flipTheCoin();
                 tournamentResults[rowIndex][4] = String.valueOf(coinFlip);
-                // MAXIMIZE CHANCES IF PROB OF WINNING IS 90%
-                // MINIMIZE CHANCES IF PROB OF LOSING IS 10%
+                // MAXIMIZE CHANCES IF PROB OF WINNING IS 85%
+                // MINIMIZE CHANCES IF PROB OF LOSING IS 15%
                 if (approxTrueProb[j] > upperLimit) {
-                    tournamentResults[rowIndex][5] = String.valueOf(0.9999999999);
+                    tournamentResults[rowIndex][5] = String.valueOf(maxProb);
                 } else if (approxTrueProb[j] < lowerLimit) {
-                    tournamentResults[rowIndex][5] = String.valueOf(0.0000000001);
+                    tournamentResults[rowIndex][5] = String.valueOf(minProb);
                 } else {
                     tournamentResults[rowIndex][5] = String.valueOf(approxTrueProb[j]);
                 }
@@ -426,11 +445,6 @@ public class Main {
                     tournamentResults[rowIndex][3] = teamHigherID;
                     tournamentResults[rowIndex][6] = String.valueOf(0);
                 }
-
-                if (approxTrueProb[j] > upperLimit ||  approxTrueProb[j] < lowerLimit) {
-                    System.out.println(Arrays.toString(tournamentResults[rowIndex]) + "\t" + approxTrueProb[j]);
-                }
-
             }
         }
     }
@@ -671,8 +685,8 @@ public class Main {
         return approxTrueProb;
     }
 
-    private static double[][] readPredictionsFromCSV(String year, List<File> csvFileList, String curDir) {
-        double[][] predictions = new double[2278][csvFileList.size()];
+    private static double[][] readPredictionsFromCSV(String year, List<File> csvFileList, String curDir, int numPostProcessProbs) {
+        double[][] predictions = new double[2278][csvFileList.size() + numPostProcessProbs];
         try {
             BufferedReader br = new BufferedReader(new FileReader(curDir + "/Results/" + year + "/Predictions-" + year + ".csv"));
             String row = br.readLine();
